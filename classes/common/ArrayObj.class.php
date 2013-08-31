@@ -55,11 +55,63 @@ class ArrayObj extends ArrayObject{
 		$this->removeValue("");
 	}
 	/**
+	 * Faz a troca de um valor por outro em todas as posicoes em que $val for igaul
+	 * @param mixed $val
+	 * @param int $key
+	 */
+	public function replace($val,$replace){
+		$aux = new ArrayObj();
+		foreach ($this->getArrayCopy() as $k=>$v){
+			if($v==$val)
+				$aux->offsetSet($k,$replace);
+			else
+				$aux->offsetSet($k,$v);
+		}
+		$this->exchangeArray($aux->getArrayCopy());
+	}
+	/**
 	 * Coloca aspas em todos os registros do array, se for aspas simples $single = true
 	 * @param boolean $single
 	 */
 	public function putQuotation($single=false){
 		($single)?$this->putIniEndMark("'"):$this->putIniEndMark('"');
+	}
+	/**
+	 * Faz o encode em entidades html, coloca NULL onde deve e aspas.
+	 * @return string
+	 */
+	public function toQueryDB(){
+		$this->encodeHtml();
+		$this->putQuotation();
+		$this->replace("","NULL");
+		return $this->toString();
+	}
+	/**
+	 * Faz o encode em entidades html, coloca NULL onde deve e aspas e retorna no estilo key="valor",
+	 * @return string
+	 */
+	public function toQueryDBUpdate(){
+		$this->encodeHtml();
+		$this->putQuotation();
+		$this->replace("","NULL");
+		$str = "";
+		foreach ($this->getArrayCopy() as $k=>$v)
+			$str .= $k.' = '.$v.',';
+		return substr($str,0,-1);
+	}
+	/**
+	 * Faz encode de todas os registros (ou o passado pelo parametro) em entidades html
+	 * @param mixed $key
+	 */
+	public function encodeHtml($key){
+		if($this->offsetExists($key))
+			$this->offsetSet(CharSet::encodeHtml($this->offsetGet()));
+		else{
+			$a = new ArrayObj();
+			foreach($this->getArrayCopy() as $k=>$v)
+				$a->offsetSet($k,CharSet::encodeHtml($v));
+			$this->exchangeArray($a->getArrayCopy());	
+		}
 	}
 	/**
 	 * Coloca a marca no inicio e final de cada registro do array
