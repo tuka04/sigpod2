@@ -148,7 +148,7 @@ class SQLWhereClause {
  * @desc classe que monta uma join sql 
  * @see Acesso e querys aos bancos de dados
  */
-class JoinSQL {
+class SQLJoin {
 	/**
 	 * Flag indicativa se ha mais de um join a ser realizado
 	 * @var boolean
@@ -172,7 +172,14 @@ class JoinSQL {
 	 * @param mixed<string,ArrayObj> $campo
 	 * @param mixed<string,ArrayObj> $objeto
 	 */
-	public function __construct($join,$campo,$objeto){
+	public function __construct($join=null,$campo=null,$objeto=null){
+		if($join==null && $campo==null && $objeto==null){
+			$this->campo=$campo;
+			$this->objeto=$objeto;
+			$this->join=$join;	
+			$this->many=null;
+			return;
+		}
 		if(!is_object($objeto))
 			die(Error::toJson(__FILE__.":".__LINE__." Parametros objeto eh o objeto da tabela "));
 		if(get_class($objeto)==get_class(new ArrayObj())){
@@ -197,6 +204,8 @@ class JoinSQL {
 	 */
 	public function toString(){
 		$str = "";
+		if($this->campo==null||$this->join==null||$this->objeto==NULL)
+			return $str;
 		if($this->many){
 			foreach ($this->campo->getArrayCopy() as $k=>$c){
 				if(!is_object($this->join))

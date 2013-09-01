@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * ArrayObj
+ * @version 2.0 (01/9/2013)
+ * @package kernel
+ * @author Leandro Kümmel Tria Mendes
+ * @desc classe que contem metodos de manipulacao da estrutura Array
+ * @see ArrayObject
+ */
 class ArrayObj extends ArrayObject{
 	
 	public function __construct($array=array()){
@@ -62,7 +69,10 @@ class ArrayObj extends ArrayObject{
 	public function replace($val,$replace){
 		$aux = new ArrayObj();
 		foreach ($this->getArrayCopy() as $k=>$v){
-			if($v==$val)
+			if(empty($v)&&empty($val)){
+				$aux->offsetSet($k,$replace);
+			}
+			else if($v==$val)
 				$aux->offsetSet($k,$replace);
 			else
 				$aux->offsetSet($k,$v);
@@ -83,7 +93,7 @@ class ArrayObj extends ArrayObject{
 	public function toQueryDB(){
 		$this->encodeHtml();
 		$this->putQuotation();
-		$this->replace("","NULL");
+		$this->replace('""',"NULL");
 		return $this->toString();
 	}
 	/**
@@ -103,8 +113,8 @@ class ArrayObj extends ArrayObject{
 	 * Faz encode de todas os registros (ou o passado pelo parametro) em entidades html
 	 * @param mixed $key
 	 */
-	public function encodeHtml($key){
-		if($this->offsetExists($key))
+	public function encodeHtml($key=null){
+		if($key!=null&&$this->offsetExists($key))
 			$this->offsetSet(CharSet::encodeHtml($this->offsetGet()));
 		else{
 			$a = new ArrayObj();

@@ -23,31 +23,56 @@ class BD extends PDO {
 	 * @var string
 	 */
 	private $id;
+	/**
+	 * Colunas da tabela do banco de dados
+	 * @var BDColumns
+	 */
+	private $columns;
 	
-	public function __construct(){
-		$conf = apc_fetch(APC_CONF);
+	public function __construct($tabela,BDColumns $columns){
+		$conf = unserialize($_SERVER[APC_CONF]);
+//		$conf = apc_fetch(APC_CONF);
 		try{
-			parent::__construct($conf->getBD()->host,$conf->getBD()->user,$conf->getBD()->pass);	
+			parent::__construct(ConfigBD::driver.":host=".$conf->getBD()->host.";dbname=".$conf->getBD()->database,$conf->getBD()->user,$conf->getBD()->pass);
+			$this->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);	
 		}catch (PDOException $e){
 			echo Error::toJson("ErroNumero ".$e->getCode()." : ".$e->getMessage());
 		}
+		$this->tabela=$tabela;
+		$this->campos=$columns->getNames();
+		$this->columns=$columns;
+	}
+	/**
+	 * Metodo que cria a tabela
+	 */
+	public function create(){
+		$qr = "CREATE TABLE IF NOT EXISTS ".$this->tabela." (";
+		$qr .= $this->columns->toQuerieCreate().")";
+		$qr .= "ENGINE=".ConfigBD::engine." DEFAULT CHARACTER SET = ".ConfigBD::charset.";";
+		$this->execQuery($qr);
 	}
 	/**
 	 * Funcao que executa uma query garantindo o ACID
 	 * @param string $qr
 	 * @return PDOStatement
 	 */
-	public function execQuery($qr,$insert=false){
+	public function execQuery($qr,$obj_name=null,$insert=false){
 		$ret = new PDOStatement();
 		try{
 			$this->beginTransaction();
-			$this->prepare($qr);
-			$ret = $this->query();
+			$ret = $this->prepare($qr);
+			$ret->execute();
 			if($insert)
 				$id = $this->lastInsertId();
 			$this->commit();
 		}catch (PDOException $e){
-			echo Error::toJson("ErroNumero ".$e->getCode()." : ".$e->getMessage());
+			$this->rollBack();
+			if($obj_name!=null && ErrorBD::getType($e)==ErrorBD::MISS_TABLE){
+				$this->create();
+				$this->execQuery($qr,null,$insert);
+			}
+			else 
+				echo Error::toJson("ErroNumero ".$e->getCode()." : ".$e->getMessage());
 		}
 		if($insert)
 			return $id;
@@ -126,6 +151,8 @@ class BD extends PDO {
 			$w=new SQLWhereClause();
 		if($l==null)
 			$l=new SQLLimit();
+		if($j==null)
+			$j=new SQLJoin();
 		$qr = SQLQueries::SELECT_JOIN;
 		$qr = str_replace(SQLQueries::TOKEN_CAMPOS, $this->campos->toString(), $qr);
 		$qr = str_replace(SQLQueries::TOKEN_TABELA, $this->tabela, $qr);

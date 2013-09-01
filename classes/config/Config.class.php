@@ -23,8 +23,10 @@ class Config {
 		$vars = Base64::decode($f->getAllContent());
 		$vars = explode(";", $vars);
 		$this->bd = new ConfigBD();
-		foreach ($vars as $k=>$v)
-			$this->bd->$k=$v;
+		foreach ($vars as $v){
+			$a = explode("=",$v);
+			$this->bd->$a[0]=ltrim(rtrim($a[1]));
+		}
 	} 
 	/**
 	 * @return ConfigBD
@@ -35,7 +37,14 @@ class Config {
 }
 
 final class ConfigBD {
+	const driver = 'mysql';
+	const engine = 'InnoDB';
+	const charset = 'utf8';
+	const TOKEN_KEY_PRIMARY = 1;
+	const TOKEN_KEY_INDEX = 2;
+	const TOKEN_KEY_UNIQUE = 3;
 	public $host;
 	public $user;
 	public $pass;
+	public $database;
 }

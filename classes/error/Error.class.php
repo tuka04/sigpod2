@@ -15,4 +15,14 @@ class Error {
 		return $a->toJson();
 	}
 }
+
+class ErrorBD {
+	const MISS_TABLE = 'miss_table';
+	public static function getType(PDOException $e){
+		switch ($e->getCode()){
+			case '42S02':
+				return self::MISS_TABLE; 
+		}
+	}
+}
 ?>
