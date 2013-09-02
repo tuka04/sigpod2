@@ -19,7 +19,7 @@ class Config {
 	}
 	
 	private function setBD(){
-		$f = new File("config/conf.inc.php", "r");
+		$f = new File(PATH_SERVER."kernel/config/conf.inc.php", "r");
 		$vars = Base64::decode($f->getAllContent());
 		$vars = explode(";", $vars);
 		$this->bd = new ConfigBD();

@@ -1,5 +1,6 @@
 <?php
-include_once 'includes.php';
+include_once 'kernel/config/server.php';
+include_once PATH_SERVER.'kernel/includes.php';
 class Teste extends BD{
 	private $tabela = "teste";
 	/**
@@ -16,9 +17,7 @@ class Teste extends BD{
 	}
 }	
 $t = new Teste();
-//PAREI AQUI: Falta fazer addJSFile, addCSSFile, Load de Files default, utilizar config do smarty para tal?
 $f = new Frontend();
-$f->getSmarty()->assign("titulo","Teste titulo");
-$f->getSmarty()->assign("var","Hello");
-$f->getSmarty()->display("teste.html");
+$f->display("teste.html");
+
 ?>

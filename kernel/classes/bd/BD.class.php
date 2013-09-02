@@ -30,8 +30,7 @@ class BD extends PDO {
 	private $columns;
 	
 	public function __construct($tabela,BDColumns $columns){
-		$conf = unserialize($_SERVER[APC_CONF]);
-//		$conf = apc_fetch(APC_CONF);
+		$conf = apc_fetch(SharedMemory::CONFIG);
 		try{
 			parent::__construct(ConfigBD::driver.":host=".$conf->getBD()->host.";dbname=".$conf->getBD()->database,$conf->getBD()->user,$conf->getBD()->pass);
 			$this->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);	
